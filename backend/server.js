@@ -14,10 +14,6 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.get('/api/message', (req, res) => {
-  res.json({ message: 'Hello from the Node backend!' });
-});
-
 // Express 5 passes listen errors (e.g. EADDRINUSE) to this callback instead of throwing.
 app.listen(config.port, (err) => {
   if (err) {

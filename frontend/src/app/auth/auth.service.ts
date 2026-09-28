@@ -2,25 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, OnDestroy, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom, retry, throwError, timer } from 'rxjs';
-
-export interface User {
-  id: number;
-  email: string;
-  name: string | null;
-  picture: string | null;
-  createdAt: string;
-  lastLoginAt: string;
-  /** ISO time when the session ends; the app signs the user out then. */
-  sessionExpiresAt: string;
-}
-
-export interface AuthConfig {
-  googleClientId: string;
-}
-
-/** Retries for /api/auth/me when the backend is briefly unreachable (e.g. restarting). */
-const ME_RETRY_COUNT = 3;
-const ME_RETRY_DELAY_MS = 1000;
+import { AuthConfig, ME_RETRY_COUNT, ME_RETRY_DELAY_MS, User } from './auth.models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService implements OnDestroy {

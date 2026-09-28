@@ -14,7 +14,7 @@ describe('Home', () => {
     }).compileComponents();
   });
 
-  it('shows the signed-in user and the backend message', async () => {
+  it('shows the signed-in user and when the session ends', async () => {
     const http = TestBed.inject(HttpTestingController);
     const auth = TestBed.inject(AuthService);
     const login = auth.loginWithGoogle('token');
@@ -30,13 +30,11 @@ describe('Home', () => {
     await login;
 
     const fixture = TestBed.createComponent(Home);
-    http.expectOne('/api/message').flush({ message: 'Hello from the Node backend!' });
     await fixture.whenStable();
 
     const text = (fixture.nativeElement as HTMLElement).textContent;
     expect(text).toContain('Someone');
     expect(text).toContain('someone@gmail.com');
-    expect(text).toContain('Hello from the Node backend!');
     expect(text).toContain('Your session ends at');
     http.verify();
   });
@@ -45,7 +43,6 @@ describe('Home', () => {
     const http = TestBed.inject(HttpTestingController);
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const fixture = TestBed.createComponent(Home);
-    http.expectOne('/api/message').flush({ message: 'hi' });
     await fixture.whenStable();
 
     (fixture.nativeElement as HTMLElement).querySelector('button')!.click();

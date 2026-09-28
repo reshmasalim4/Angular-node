@@ -3,7 +3,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Router, provideRouter } from '@angular/router';
 import { vi } from 'vitest';
-import { AuthService, User } from './auth.service';
+import { User } from './auth.models';
+import { AuthService } from './auth.service';
 
 const HOUR_MS = 60 * 60 * 1000;
 
