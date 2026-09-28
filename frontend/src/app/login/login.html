@@ -1,0 +1,16 @@
+<main class="login">
+  <section class="card">
+    <h1>Welcome</h1>
+    <p class="subtitle">Sign in with your Gmail account to continue.</p>
+
+    <div #googleButton class="google-button" [class.hidden]="busy()"></div>
+
+    @if (busy()) {
+      <p class="status">Signing you in…</p>
+    }
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+  </section>
+</main>
