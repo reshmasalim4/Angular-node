@@ -67,11 +67,13 @@ authRouter.post('/google', async (req, res) => {
       audience: config.googleClientId
     });
     payload = ticket.getPayload();
-  } catch {
+  } catch (err) {
+    console.warn(`Google ID token rejected: ${err.message}`);
     return res.status(401).json({ error: 'Invalid Google sign-in. Please try again.' });
   }
 
   if (!payload?.email_verified || !isAllowedEmail(payload.email, config.allowedEmailDomain)) {
+    console.warn(`Sign-in refused for ${payload?.email ?? 'unknown email'}`);
     return res
       .status(403)
       .json({ error: `Only @${config.allowedEmailDomain} accounts can sign in.` });

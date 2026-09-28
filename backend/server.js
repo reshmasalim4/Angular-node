@@ -18,6 +18,11 @@ app.get('/api/message', (req, res) => {
   res.json({ message: 'Hello from the Node backend!' });
 });
 
-app.listen(config.port, () => {
+// Express 5 passes listen errors (e.g. EADDRINUSE) to this callback instead of throwing.
+app.listen(config.port, (err) => {
+  if (err) {
+    console.error(`Backend could not start on port ${config.port}: ${err.message}`);
+    process.exit(1);
+  }
   console.log(`Backend listening on http://localhost:${config.port}`);
 });
