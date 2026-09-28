@@ -1,7 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
+import { vi } from 'vitest';
 import { AuthService } from '../auth/auth.service';
 import { Home } from './home';
 
@@ -24,6 +25,7 @@ describe('Home', () => {
       picture: null,
       createdAt: '',
       lastLoginAt: '',
+      sessionExpiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
     });
     await login;
 
@@ -35,6 +37,22 @@ describe('Home', () => {
     expect(text).toContain('Someone');
     expect(text).toContain('someone@gmail.com');
     expect(text).toContain('Hello from the Node backend!');
+    expect(text).toContain('Your session ends at');
+    http.verify();
+  });
+
+  it('Log out returns to /login even when the backend is unreachable', async () => {
+    const http = TestBed.inject(HttpTestingController);
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const fixture = TestBed.createComponent(Home);
+    http.expectOne('/api/message').flush({ message: 'hi' });
+    await fixture.whenStable();
+
+    (fixture.nativeElement as HTMLElement).querySelector('button')!.click();
+    http.expectOne('/api/auth/logout').error(new ProgressEvent('error'));
+    await fixture.whenStable();
+
+    expect(navigate).toHaveBeenCalledWith(['/login']);
     http.verify();
   });
 });

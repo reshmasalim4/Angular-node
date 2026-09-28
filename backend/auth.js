@@ -6,7 +6,8 @@ import { findUserById, upsertGoogleUser } from './db.js';
 import { isAllowedEmail } from './allowed-email.js';
 
 const SESSION_COOKIE = 'session';
-const SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+// Sessions last one hour from sign-in and are not extended by activity.
+const SESSION_MAX_AGE_SECONDS = 60 * 60;
 
 const googleClient = new OAuth2Client(config.googleClientId);
 
@@ -18,33 +19,37 @@ const cookieOptions = {
 };
 
 /** Shape returned to the frontend; keeps internal columns out of responses. */
-function toPublicUser(user) {
+function toPublicUser(user, sessionExpiresAt) {
   return {
     id: user.id,
     email: user.email,
     name: user.name,
     picture: user.picture,
     createdAt: user.created_at,
-    lastLoginAt: user.last_login_at
+    lastLoginAt: user.last_login_at,
+    sessionExpiresAt: new Date(sessionExpiresAt * 1000).toISOString()
   };
 }
 
-function currentUser(req) {
+/** Returns { user, expiresAt } for a valid, unexpired session cookie, else null. */
+function currentSession(req) {
   const token = req.cookies?.[SESSION_COOKIE];
   if (!token) return null;
   try {
-    const { sub } = jwt.verify(token, config.jwtSecret);
-    return findUserById(Number(sub)) ?? null;
+    const { sub, exp } = jwt.verify(token, config.jwtSecret);
+    const user = findUserById(Number(sub));
+    return user ? { user, expiresAt: exp } : null;
   } catch {
     return null;
   }
 }
 
-/** Middleware for routes that need a signed-in user; sets req.user. */
+/** Middleware for routes that need a signed-in user; sets req.user and req.sessionExpiresAt. */
 export function requireAuth(req, res, next) {
-  const user = currentUser(req);
-  if (!user) return res.status(401).json({ error: 'Not signed in' });
-  req.user = user;
+  const session = currentSession(req);
+  if (!session) return res.status(401).json({ error: 'Not signed in' });
+  req.user = session.user;
+  req.sessionExpiresAt = session.expiresAt;
   next();
 }
 
@@ -87,13 +92,16 @@ authRouter.post('/google', async (req, res) => {
     emailVerified: payload.email_verified
   });
 
-  const token = jwt.sign({ sub: String(user.id) }, config.jwtSecret, { expiresIn: '7d' });
-  res.cookie(SESSION_COOKIE, token, { ...cookieOptions, maxAge: SESSION_MAX_AGE_MS });
-  res.json(toPublicUser(user));
+  const token = jwt.sign({ sub: String(user.id) }, config.jwtSecret, {
+    expiresIn: SESSION_MAX_AGE_SECONDS
+  });
+  const { exp } = jwt.decode(token);
+  res.cookie(SESSION_COOKIE, token, { ...cookieOptions, maxAge: SESSION_MAX_AGE_SECONDS * 1000 });
+  res.json(toPublicUser(user, exp));
 });
 
 authRouter.get('/me', requireAuth, (req, res) => {
-  res.json(toPublicUser(req.user));
+  res.json(toPublicUser(req.user, req.sessionExpiresAt));
 });
 
 authRouter.post('/logout', (req, res) => {

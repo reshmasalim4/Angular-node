@@ -3,6 +3,10 @@
     <h1>Welcome</h1>
     <p class="subtitle">Sign in with your Gmail account to continue.</p>
 
+    @if (sessionExpired && !error()) {
+      <p class="notice" role="status">Your session has expired. Please sign in again.</p>
+    }
+
     <div #googleButton class="google-button" [class.hidden]="busy()"></div>
 
     @if (busy()) {

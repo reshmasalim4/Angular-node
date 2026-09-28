@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, inject, signal, viewChild } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, errorMessage } from '../auth/auth.service';
 import { loadGoogleIdentity } from '../auth/google-identity';
 
@@ -15,6 +15,8 @@ export class Login implements AfterViewInit {
 
   protected readonly error = signal<string | null>(null);
   protected readonly busy = signal(false);
+  protected readonly sessionExpired =
+    inject(ActivatedRoute).snapshot.queryParamMap.get('reason') === 'expired';
 
   async ngAfterViewInit(): Promise<void> {
     try {

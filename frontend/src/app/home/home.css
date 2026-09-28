@@ -41,7 +41,8 @@ button:hover {
   font-size: 1.25rem;
 }
 
-.profile p {
+.profile p,
+.session {
   margin: 0.25rem 0 0;
   color: #5f6368;
 }

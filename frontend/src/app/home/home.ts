@@ -1,10 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-home',
+  imports: [DatePipe],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })

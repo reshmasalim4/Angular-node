@@ -30,13 +30,15 @@ Open http://localhost:4200. You'll be sent to the login page; sign in with a Gma
 
 Only `@gmail.com` accounts are accepted (`ALLOWED_EMAIL_DOMAIN` in `backend/.env`).
 
+Sessions last **1 hour** from sign-in and are not extended by activity. When the hour is up the app signs the user out and shows "Your session has expired" on the login page.
+
 ## API
 
 | Method | Path | Description |
 | --- | --- | --- |
 | GET | `/api/auth/config` | Google client ID for the login button |
 | POST | `/api/auth/google` | Exchange a Google ID token for a session cookie; saves the user |
-| GET | `/api/auth/me` | Current user, or 401 |
+| GET | `/api/auth/me` | Current user (including `sessionExpiresAt`), or 401 |
 | POST | `/api/auth/logout` | Clear the session |
 
 ## Tests
